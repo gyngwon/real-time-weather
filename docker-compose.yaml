@@ -1,3 +1,20 @@
+version: '3'
+
+x-spark-common: &spark-common
+  image: bitnami/spark:latest
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+  command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+  depends_on:
+    - spark-master
+  environment:
+    SPARK_MODE: Worker
+    SPARK_WORKER_CORES: 2
+    SPARK_WORKER_MEMORY: 1g
+    SPARK_MASTER_URL: spark://spark-master:7077
+  networks:
+    - sparkdata
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -33,3 +50,24 @@ services:
       - DYNAMIC_CONFIG_ENABLED=true
       - KAFKA_CLUSTERS_0_NAME=peters_kafka
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:19092
+      
+  spark-master:
+    image: bitnami/spark:3.5.1
+    volumes:
+      - ./jobs:/opt/bitnami/spark/jobs
+    ports:
+      - '9090:8080' #internal:external
+      - '7077:7077' 
+    networks:
+      - sparkdata
+    environment:
+      SPARK_MODE: 'master'
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+  
+  spark-worker-1:
+    <<: *spark-common
+  spark-worker-2:
+    <<: *spark-common
+
+networks:
+  sparkdata:
