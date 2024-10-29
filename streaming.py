@@ -1,100 +1,103 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
+from pyspark.sql.functions import from_json, col, avg, min, max, sum, to_date, udf, first
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, IntegerType
-import calculate  # Import your calculation functions
+import logging
 
-def process_row(row):
-    """
-    Kafka에서 수신한 데이터를 계산 모듈로 전달하여 처리
-    """
-    data = {
-        "city": row.city,
-        "country": row.country,
-        "temperature": row.temperature,
-        "feels_like": row.feels_like,
-        "temp_min": row.temp_min,
-        "temp_max": row.temp_max,
-        "pressure": row.pressure,
-        "humidity": row.humidity,
-        "visibility": row.visibility,
-        "wind_speed": row.wind_speed,
-        "wind_deg": row.wind_deg,
-        "rain_1h": row.rain_1h,
-        "cloud_coverage": row.cloud_coverage,
-        "description": row.description,
-        "icon": row.icon,
-        "timestamp": row.timestamp
-    }
+# Import your calculation functions
+from calculate import calculate_heat_index, calculate_dew_point, calculate_wind_chill
 
-    # Update the function calls to match the function names in calculate.py
-    heat_index = calculate.calculate_heat_index(data["temperature"], data["humidity"])  # Updated function name
-    dew_point = calculate.calculate_dew_point(data["temperature"], data["humidity"])  # Updated function name
-    wind_chill = calculate.calculate_wind_chill(data["temperature"], data["wind_speed"])  # Updated function name
-    total_rainfall = calculate.calculate_total_rainfall([data["rain_1h"]])  # Wrap in a list
-    avg_cloud_coverage = calculate.calculate_average_cloud_coverage([data["cloud_coverage"]])  # Wrap in a list
+# Set logging level to WARN
+logging.getLogger("org").setLevel(logging.WARN)
+logging.getLogger("py4j").setLevel(logging.WARN)
 
-    # Print formatted data
-    print(f"City: {data['city']} | Country: {data['country']}")
-    print(f"Temperature: {data['temperature']:.2f}°C | Feels Like: {data['feels_like']:.2f}°C | "
-          f"Min Temp: {data['temp_min']:.2f}°C | Max Temp: {data['temp_max']:.2f}°C")
-    print(f"Pressure: {data['pressure']:.2f} hPa | Humidity: {data['humidity']}% | "
-          f"Visibility: {data['visibility']} meters")
-    print(f"Wind Speed: {data['wind_speed']:.2f} m/s | Wind Degree: {data['wind_deg']}°")
-    print(f"Rainfall (Last 1h): {data['rain_1h']:.2f} mm | Cloud Coverage: {data['cloud_coverage']}%")
-    print(f"Heat Index: {heat_index:.2f}°C | Dew Point: {dew_point:.2f}°C | Wind Chill: {wind_chill:.2f}°C")
-    print(f"Total Rainfall: {total_rainfall:.2f} mm | Avg Cloud Coverage: {avg_cloud_coverage:.2f}%\n")
-    
-    # Call the processing function from calculate.py
-    calculate.process_weather_data(data)
+# Define the schema for the incoming JSON data
+schema = StructType([
+    StructField("city", StringType(), True),
+    StructField("country", StringType(), True),
+    StructField("temperature", FloatType(), True),
+    StructField("feels_like", FloatType(), True),
+    StructField("temp_min", FloatType(), True),
+    StructField("temp_max", FloatType(), True),
+    StructField("pressure", IntegerType(), True),
+    StructField("humidity", IntegerType(), True),
+    StructField("visibility", StringType(), True),
+    StructField("wind_speed", FloatType(), True),
+    StructField("wind_deg", IntegerType(), True),
+    StructField("rain_1h", FloatType(), True),
+    StructField("cloud_coverage", IntegerType(), True),
+    StructField("description", StringType(), True),
+    StructField("icon", StringType(), True),
+    StructField("timestamp", StringType(), True)
+])
 
-def main():
-    spark = SparkSession.builder \
-        .appName("KafkaStreamReader") \
-        .master("local[*]") \
-        .getOrCreate()
+# Create a Spark session
+spark = SparkSession.builder \
+    .appName("KafkaToConsole") \
+    .getOrCreate()
 
-    kafka_topic = "weather"
-    
-    kafka_stream_df = spark.readStream \
-        .format("kafka") \
-        .option("kafka.bootstrap.servers", "localhost:9092") \
-        .option("subscribe", kafka_topic) \
-        .option("startingOffsets", "earliest") \
-        .load()
-    
-    # Define the schema for the JSON data
-    weather_schema = StructType([
-        StructField("city", StringType(), True),
-        StructField("country", StringType(), True),
-        StructField("temperature", FloatType(), True),
-        StructField("feels_like", FloatType(), True),
-        StructField("temp_min", FloatType(), True),
-        StructField("temp_max", FloatType(), True),
-        StructField("pressure", FloatType(), True),
-        StructField("humidity", IntegerType(), True),
-        StructField("visibility", IntegerType(), True),
-        StructField("wind_speed", FloatType(), True),
-        StructField("wind_deg", IntegerType(), True),
-        StructField("rain_1h", FloatType(), True),
-        StructField("cloud_coverage", IntegerType(), True),
-        StructField("description", StringType(), True),
-        StructField("icon", StringType(), True),
-        StructField("timestamp", StringType(), True),
-    ])
-    
-    # Parse the JSON value into a structured DataFrame
-    parsed_stream_df = kafka_stream_df.select(from_json(col("value").cast("string"), weather_schema).alias("data"))
-    
-    # Select fields from the parsed DataFrame
-    parsed_stream_df = parsed_stream_df.select("data.*")
+# Set the logging level for the Spark application
+spark.sparkContext.setLogLevel("WARN")
 
-    # Write the output to the console
-    query = parsed_stream_df.writeStream \
-        .foreach(process_row) \
-        .outputMode("update") \
-        .start()
+# Read stream from Kafka with starting offsets
+df = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "weather") \
+    .option("startingOffsets", "earliest") \
+    .load()
 
-    query.awaitTermination()
+# Cast the key and value from Kafka to string
+df = df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
 
-if __name__ == "__main__":
-    main()
+# Parse the JSON value and select the relevant fields
+weather_df = df.select(
+    from_json(col("value"), schema).alias("weather_data")
+).select("weather_data.*")
+
+# Convert the timestamp to date for daily aggregation
+weather_df = weather_df.withColumn("date", to_date(col("timestamp")))
+
+# Register UDFs for calculations
+@udf(returnType=FloatType())
+def udf_heat_index(temp, humidity):
+    return calculate_heat_index(temp, humidity)
+
+@udf(returnType=FloatType())
+def udf_dew_point(temp, humidity):
+    return calculate_dew_point(temp, humidity)
+
+@udf(returnType=FloatType())
+def udf_wind_chill(temp, wind_speed):
+    return calculate_wind_chill(temp, wind_speed)
+
+# Perform aggregations
+agg_df = weather_df.groupBy("date", "city").agg(
+    first("country").alias("country"),
+    avg("temperature").alias("avg_temperature"),
+    min("temp_min").alias("min_temperature"),
+    max("temp_max").alias("max_temperature"),
+    sum("rain_1h").alias("total_rainfall"),
+    avg("cloud_coverage").alias("avg_cloud_coverage"),
+    avg("humidity").alias("humidity"),
+    avg("wind_speed").alias("wind_speed"),
+    first("feels_like").alias("feels_like"),
+    first("visibility").alias("visibility"),
+    first("wind_deg").alias("wind_deg"),
+    first("description").alias("description"),
+    first("timestamp").alias("timestamp")
+)
+
+# Apply UDFs to calculate metrics
+result_df = agg_df.withColumn("heat_index", udf_heat_index(col("avg_temperature"), col("humidity"))) \
+                  .withColumn("dew_point", udf_dew_point(col("avg_temperature"), col("humidity"))) \
+                  .withColumn("wind_chill", udf_wind_chill(col("avg_temperature"), col("wind_speed")))
+
+# Write the aggregated output to the console
+query = result_df.writeStream \
+    .outputMode("update") \
+    .format("console") \
+    .option("truncate", "false") \
+    .start()
+
+# Await termination of the query
+query.awaitTermination()

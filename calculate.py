@@ -1,15 +1,6 @@
 import math
 import json
 
-# Function to calculate daily average, min, and max temperatures
-def calculate_temperature_stats(temperatures):
-    if not temperatures:
-        return None, None, None  # Handle case with no data
-    average_temp = sum(temperatures) / len(temperatures)
-    min_temp = min(temperatures)
-    max_temp = max(temperatures)
-    return average_temp, min_temp, max_temp
-
 # Function to calculate the heat index
 def calculate_heat_index(temperature, humidity):
     # Set default values if None
@@ -38,16 +29,6 @@ def calculate_wind_chill(temperature, wind_speed):
     else:
         return temperature  # No wind chill effect
 
-# Function to calculate total rainfall
-def calculate_total_rainfall(rainfall_readings):
-    return sum(rainfall_readings)
-
-# Function to calculate average cloud coverage
-# If there are values in the list, it calculates the average by summing the values and dividing by the number of entries.
-def calculate_average_cloud_coverage(cloud_coverages):
-    if not cloud_coverages:
-        return None  # Handle case with no data
-    return sum(cloud_coverages) / len(cloud_coverages)
 
 # Function to process weather data
 def process_weather_data(data):
@@ -55,30 +36,22 @@ def process_weather_data(data):
     temperature = data['temperature']
     humidity = data['humidity']
     wind_speed = data['wind_speed']
-    rainfall = data['rain_1h']
-    cloud_coverage = data['cloud_coverage']
-    
+
     
     # Update global lists for calculations
-    global temperatures, humidities, wind_speeds, rainfalls, cloud_coverages
+    global temperatures, humidities, wind_speeds
     temperatures.append(temperature)
     humidities.append(humidity)
     wind_speeds.append(wind_speed)
-    rainfalls.append(rainfall)
-    cloud_coverages.append(cloud_coverage)
 
     # Perform calculations
-    avg_temp, min_temp, max_temp = calculate_temperature_stats(temperatures)
     heat_index = calculate_heat_index(temperature, humidity)
     dew_point = calculate_dew_point(temperature, humidity)
     wind_chill = calculate_wind_chill(temperature, wind_speed)
-    total_rainfall = calculate_total_rainfall(rainfalls)
-    avg_cloud_coverage = calculate_average_cloud_coverage(cloud_coverages)
 
 # Example list to hold previous values
-city=[]
+city = []
 temperatures = []
 humidities = []
 wind_speeds = []
-rainfalls = []
-cloud_coverages = []
+
