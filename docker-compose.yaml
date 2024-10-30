@@ -69,5 +69,12 @@ services:
   spark-worker-2:
     <<: *spark-common
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379" 
+    networks:
+      - sparkdata
+
 networks:
   sparkdata:

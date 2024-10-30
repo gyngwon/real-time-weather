@@ -2,6 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col, avg, min, max, sum, to_date, udf, first
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, IntegerType
 import logging
+import redis
+import json
 
 # Import your calculation functions
 from calculate import calculate_heat_index, calculate_dew_point, calculate_wind_chill
@@ -33,6 +35,7 @@ schema = StructType([
 # Create a Spark session
 spark = SparkSession.builder \
     .appName("KafkaToConsole") \
+    .config("spark.driver.host","127.0.0.1") \
     .getOrCreate()
 
 # Set the logging level for the Spark application
@@ -92,12 +95,46 @@ result_df = agg_df.withColumn("heat_index", udf_heat_index(col("avg_temperature"
                   .withColumn("dew_point", udf_dew_point(col("avg_temperature"), col("humidity"))) \
                   .withColumn("wind_chill", udf_wind_chill(col("avg_temperature"), col("wind_speed")))
 
-# Write the aggregated output to the console
+# Initialize Redis client
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+# Function to save data to Redis
+def save_to_redis(row):
+    
+    redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+    
+    data = {
+        "city": row.city,
+        "country": row.country,
+        "avg_temperature": row.avg_temperature,
+        "min_temperature": row.min_temperature,
+        "max_temperature": row.max_temperature,
+        "total_rainfall": row.total_rainfall,
+        "avg_cloud_coverage": row.avg_cloud_coverage,
+        "humidity": row.humidity,
+        "wind_speed": row.wind_speed,
+        "feels_like": row.feels_like,
+        "visibility": row.visibility,
+        "wind_deg": row.wind_deg,
+        "description": row.description,
+        "timestamp": row.timestamp,
+        "heat_index": row.heat_index,
+        "dew_point": row.dew_point,
+        "wind_chill": row.wind_chill
+    }
+    print(row)
+    # Store the data as a JSON string in Redis with a unique key
+    redis_key = f"weather:{row.city}"
+    redis_client.set(redis_key, json.dumps(data))
+
+def process_batch(batch_df, batch_id):
+    batch_df.foreach(save_to_redis)
+
 query = result_df.writeStream \
+    .foreachBatch(process_batch) \
     .outputMode("update") \
-    .format("console") \
-    .option("truncate", "false") \
     .start()
+
 
 # Await termination of the query
 query.awaitTermination()
