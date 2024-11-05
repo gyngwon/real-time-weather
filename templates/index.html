@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Selector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <div class="hero">
+        <div class="selector">
+            <div class="selectField" id="selectField">
+                <p id="selectText">Select a City</p>
+                <img src="{{ url_for('static', filename='images/arrow.png') }}" alt="Dropdown arrow">
+            </div>
+
+            <ul id="list">
+                <li class="options" tabindex="0"><p>Seoul</p></li>
+                <li class="options" tabindex="0"><p>Tokyo</p></li>
+                <li class="options" tabindex="0"><p>London</p></li>
+                <li class="options" tabindex="0"><p>New York</p></li>
+                <!-- Add more cities as needed -->
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        var selectField = document.getElementById("selectField");
+        var selectText = document.getElementById("selectText");
+        var options = document.querySelectorAll(".options");
+        var list = document.getElementById("list");
+
+        // Toggle the dropdown visibility
+        selectField.onclick = function() {
+            if (list.style.display === "none" || list.style.display === "") {
+                list.style.display = "block";
+            } else {
+                list.style.display = "none";
+            }
+        };
+
+        // Redirect to the weather page when an option is clicked
+        options.forEach(option => {
+            option.onclick = function() {
+                const selectedCity = this.textContent; // Get selected city name
+                selectText.textContent = selectedCity; // Update selected city text
+                list.style.display = "none"; // Hide the dropdown after selection
+                
+                // Redirect to the weather page for the selected city
+                window.location.href = `/weather?city=${selectedCity}`;
+            };
+        });
+
+        // Close the dropdown if clicked outside
+        document.addEventListener('click', function(event) {
+            if (!selectField.contains(event.target) && !list.contains(event.target)) {
+                list.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
