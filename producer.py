@@ -12,7 +12,12 @@ load_dotenv()
 # Get the API key and base URL from environment variables
 API_KEY = os.getenv('API_KEY')
 BASE_URL = os.getenv('BASE_URL')
-cities = ['Seoul', 'New York', 'London', 'Tokyo', 'Paris']
+cities = [
+    'Seoul', 'New York', 'London', 'Tokyo', 'Paris',
+    'Mumbai', 'Sydney', 'Beijing', 'Berlin', 'Moscow',
+    'Rio de Janeiro', 'Cape Town', 'Toronto', 'Mexico City', 'Dubai',
+    'Singapore', 'Bangkok', 'Istanbul', 'Rome', 'Los Angeles'
+]
 
 # Initialize Kafka Producer
 producer = KafkaProducer(
@@ -37,7 +42,17 @@ def fetch_weather_data(city):
             'country': weather_data['sys']['country'],
             'temperature': weather_data['main']['temp'],
             'feels_like': weather_data['main']['feels_like'],
+            'temp_min': weather_data['main']['temp_min'],
+            'temp_max': weather_data['main']['temp_max'],
+            'pressure': weather_data['main']['pressure'],
+            'humidity': weather_data['main']['humidity'],
+            'visibility': weather_data.get('visibility', 'N/A'),
+            'wind_speed': weather_data['wind']['speed'],
+            'wind_deg': weather_data['wind']['deg'],
+            'rain_1h': weather_data.get('rain', {}).get('1h', 0),
+            'cloud_coverage': weather_data['clouds']['all'],
             'description': weather_data['weather'][0]['description'],
+            'icon': weather_data['weather'][0]['icon'],
             'timestamp': datetime.now().isoformat()
         }
         # Send data to Kafka topic
@@ -51,7 +66,7 @@ def main():
         for city in cities:
             fetch_weather_data(city)
             time.sleep(1)  # short delay between requests
-        time.sleep(300)  # 5 minutes
+        time.sleep(10)  # 5 minutes
 
 if __name__ == "__main__":
     main()

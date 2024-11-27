@@ -5,57 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Data for {{ weather.city }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
-    <!-- JavaScript for Auto-Refresh -->
+    <style>
+        body {
+            background: url('https://cdn.pixabay.com/photo/2018/06/21/13/57/clouds-3488632_1280.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            margin: 20px 0;
+            color: #343a40;
+        }
+        .table-container {
+            overflow-x: auto; /* 가로 스크롤 추가 */
+        }
+        .table thead {
+            background-color: #007bff;
+            color: white;
+        }
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9); /* 반투명 효과 */
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            margin-top: 20px;
+        }
+    </style>
     <script>
-        // Refresh the page every 15 seconds (15000 milliseconds)
+        // Refresh the page every 5 seconds (5000 milliseconds)
         setInterval(function() {
             location.reload();
-        }, 15000);
+        }, 5000);
     </script>
 </head>
 <body>
     <div class="container">
         <h1 class="text-center">Weather Data for {{ weather.city }}</h1>
-        <p class="text-center"><strong>Last Updated:</strong> {{ weather.timestamp }}</p> <!-- Display the full timestamp -->
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>City</th>
-                    <th>Country</th>
-                    <th>Avg Temperature (°C)</th>
-                    <th>Min Temperature (°C)</th>
-                    <th>Max Temperature (°C)</th>
-                    <th>Total Rainfall (mm)</th>
-                    <th>Avg Cloud Coverage (%)</th>
-                    <th>Humidity (%)</th>
-                    <th>Wind Speed (m/s)</th>
-                    <th>Feels Like (°C)</th>
-                    <th>Visibility (m)</th>
-                    <th>Wind Direction (°)</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ weather.timestamp }}</td> <!-- Display the formatted timestamp in the table -->
-                    <td>{{ weather.city }}</td>
-                    <td>{{ weather.country }}</td>
-                    <td>{{ weather.avg_temperature }}</td>
-                    <td>{{ weather.min_temperature }}</td>
-                    <td>{{ weather.max_temperature }}</td>
-                    <td>{{ weather.total_rainfall }}</td>
-                    <td>{{ weather.avg_cloud_coverage }}</td>
-                    <td>{{ weather.humidity }}</td>
-                    <td>{{ weather.wind_speed }}</td>
-                    <td>{{ weather.feels_like }}</td>
-                    <td>{{ weather.visibility }}</td>
-                    <td>{{ weather.wind_deg }}</td>
-                    <td>{{ weather.description }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <p class="text-center text-muted"><strong>Last Updated:</strong> {{ weather.timestamp }}</p>
+        <div class="table-container">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>City</th>
+                        <th>Country</th>
+                        <th>Temperature (°C)</th> <!-- 통합 열 -->
+                        <th>Rainfall (mm)</th>
+                        <th>Cloud (%)</th>
+                        <th>Humidity (%)</th>
+                        <th>Wind (m/s)</th>
+                        <th>Feels Like (°C)</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ weather.timestamp }}</td>
+                        <td>{{ weather.city }}</td>
+                        <td>{{ weather.country }}</td>
+                        <td>
+                            Avg: {{ weather.avg_temperature }}<br>
+                            Min: {{ weather.min_temperature }}<br>
+                            Max: {{ weather.max_temperature }}
+                        </td>
+                        <td>{{ weather.total_rainfall }}</td>
+                        <td>{{ weather.avg_cloud_coverage }}</td>
+                        <td>{{ weather.humidity }}</td>
+                        <td>{{ weather.wind_speed }} ({{ weather.wind_deg }}°)</td>
+                        <td>{{ weather.feels_like }}</td>
+                        <td>{{ weather.description }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div class="text-center">
             <a href="/" class="btn btn-primary">Back to City Selection</a>
         </div>
