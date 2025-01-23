@@ -82,6 +82,8 @@ Lists required Python packages, including:
 - `requests`
 - `kafka-python`
 - `pyspark`
+- `pymysql`
+- `pandas`
 
 ## Usage
 
