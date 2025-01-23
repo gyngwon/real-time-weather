@@ -1,10 +1,11 @@
+import os
 import requests
 import time
 from datetime import datetime, timedelta
 from kafka import KafkaProducer
 import json
 
-API_KEY = '38764b6b9b354ed35250a90b4b2f1d64'
+API_KEY = os.getenv('API_KEY')
 BASE_URL = 'http://api.openweathermap.org/data/2.5/weather'
 cities = [
     'Bolzano', 'Seoul', 'London', 'New York', 'Paris',
