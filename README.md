@@ -39,11 +39,15 @@ The system consists of the following components:
 ```python
 API_KEY = 'your_api_key_here'
 ```
-3. Start the services using Docker Compose:
+3. Create Kafka topics: Run the following script to create Kafka topics:
+```bash
+./create-kafka-topics.sh
+```
+4. Start the services using Docker Compose:
 ```bash
 docker-compose up -d
 ```
-4. Install Python dependencies:
+5. Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
