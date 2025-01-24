@@ -15,6 +15,7 @@ This project is a real-time weather monitoring system that fetches weather data 
 
 ## System Architecture
 
+<img width="1048" alt="Image" src="https://github.com/user-attachments/assets/85c2448c-8c1f-4c3f-aeb4-f40bf67764c4" />
 The system consists of the following components:
 
 - **MySQL**: Stores weather data for further analysis.
