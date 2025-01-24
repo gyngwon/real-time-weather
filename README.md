@@ -39,7 +39,7 @@ The system consists of the following components:
 2. Update the OpenWeatherMap API key in `producer.py`:
 
 ```python
-API_KEY = 'your_api_key_here'
+export API_KEY='your_api_key_here' 
 ```
 3. Create Kafka topics: Run the following script to create Kafka topics:
 ```bash
