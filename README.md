@@ -2,6 +2,8 @@
 
 This project is a real-time weather monitoring system that fetches weather data from the OpenWeatherMap API, processes it using Apache Spark, and streams the results through Kafka. The processed data includes calculated metrics such as heat index, dew point, and wind chill, and is stored in MySQL and Kafka topics for analysis and visualization.
 
+**GitHub Repository**: [https://github.com/gyngwon/real-time-weather.git](https://github.com/gyngwon/real-time-weather.git)
+
 ## Features
 
 - **Data Collection**: Fetch real-time weather data from multiple cities using the OpenWeatherMap API.
