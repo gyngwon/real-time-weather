@@ -18,11 +18,17 @@ This project is a real-time weather monitoring system that fetches weather data 
 <img width="1048" alt="Image" src="https://github.com/user-attachments/assets/85c2448c-8c1f-4c3f-aeb4-f40bf67764c4" />
 The system consists of the following components:
 
-- **MySQL**: Stores weather data for further analysis.
-- **Kafka**: Streams raw and processed weather data.
-- **Apache Spark**: Processes real-time weather data and performs metric calculations.
-- **Zookeeper**: Manages Kafka brokers.
-- **Kafka-UI**: Provides a web interface to monitor Kafka topics.
+- **OpenWeather API**:  
+  This is the primary source for fetching real-time weather data, including temperature, humidity, and wind speed.
+- **Kafka**:  
+  Acts as a distributed message broker to stream the collected weather data, allowing for efficient handling of data from multiple cities.
+- **Apache Spark Streaming**:  
+  Processes the data streamed from Kafka in real-time, calculating additional metrics such as heat index and wind chill.
+- **MySQL Database**:  
+  Stores both raw and processed weather data for historical analysis and retrieval.
+- **Streamlit**:  
+  Provides an interactive dashboard for visualizing the processed weather data, allowing users to view current conditions and metrics easily.
+
 
 ## Prerequisites
 
