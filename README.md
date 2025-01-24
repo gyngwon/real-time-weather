@@ -16,6 +16,7 @@ This project is a real-time weather monitoring system that fetches weather data 
 ## System Architecture
 
 <img width="1048" alt="Image" src="https://github.com/user-attachments/assets/85c2448c-8c1f-4c3f-aeb4-f40bf67764c4" />
+
 - **OpenWeather API**: This is the primary source for fetching real-time weather data, including temperature, humidity, and wind speed.
 - **Kafka**: Acts as a distributed message broker to stream the collected weather data, allowing for efficient handling of data from multiple cities.
 - **Apache Spark Streaming**: Processes the data streamed from Kafka in real-time, calculating additional metrics such as heat index and wind chill.
