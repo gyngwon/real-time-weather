@@ -107,15 +107,33 @@ spark-submit --master spark://spark-master:7077 --packages org.apache.spark:spar
 - Access Kafka-UI at [http://localhost:8080](http://localhost:8080).
 - View real-time data in topics: `weatherDetails`, `metricsWeather`, `aggregatedWeather`.
 
+### 4. Save the data to MySQL 
+```bash
+python mysql.py
+```
+### 5. Run the Streamlit dashboard
+```bash
+streamlit run app.py
+```
+
 ## Data Schema
 
 ### Raw Weather Data (`weatherDetails`):
 - `city`: City name
 - `country`: Country code
-- `temperature`: Current temperature in Celsius
-- `humidity`: Current humidity percentage
-- `timestamp`: Local timestamp of data collection
-- Other metrics: Feels like, min/max temperature, pressure, visibility, wind speed, etc.
+- `temperature`: Current temperature in Celsius (°C)  
+- `humidity`: Current humidity percentage (%)  
+- `timestamp`: Local timestamp of data collection  
+- `Feels like`: Perceived temperature (°C), considering humidity and wind effects  
+- `Min/Max temperature`: Expected minimum and maximum temperatures for the day (°C)  
+- `Pressure`: Atmospheric pressure (hPa)  
+- `Visibility`: Maximum visible distance (in meters or kilometers)  
+- `Wind speed`: Wind speed (in m/s or km/h)
+- `Wind degree (wind_deg`: Direction of the wind, measured in degrees (0° = North, 90° = East, etc.)  
+- `Rain (rain_1h`: Amount of rain in the last hour (in millimeters)  
+- `Cloud coverage (cloud_coverage`: Percentage of the sky covered by clouds  
+- `Description`: General weather description (e.g., "clear sky", "rainy")  
+- `Icon`: Weather icon code (used for visual representation) 
 
 ### Processed Metrics (`metricsWeather`):
 - `heat_index`: Calculated heat index
@@ -123,4 +141,4 @@ spark-submit --master spark://spark-master:7077 --packages org.apache.spark:spar
 - `wind_chill`: Calculated wind chill
 
 ### Aggregated Metrics (`aggregatedWeather`):
-- Average, minimum, and maximum values for temperature and humidity over 10-minute windows.
+- Average, minimum, and maximum values for temperature and humidity over 1-hour windows.
